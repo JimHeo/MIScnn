@@ -79,11 +79,13 @@ def collect_batch(img_queue, start, end):
     # Iterate over the images which will be relocated in a batch
     img_list = []
     seg_list = []
+    weight_list = []
     for j in range(start, end):
         # Access these images
         img = img_queue[j][0]
-        if len(img_queue[j]) == 2 : seg = img_queue[j][1]
+        if len(img_queue[j]) >= 2 : seg = img_queue[j][1]
         else : seg = None
+        if len(img_queue[j]) == 3 : weight_list.append(img_queue[j][2])
         # Add images to associated list
         img_list.append(img)
         seg_list.append(seg)
@@ -91,8 +93,11 @@ def collect_batch(img_queue, start, end):
     batch_img = np.stack(img_list, axis=0)
     if any(elem is None for elem in seg_list) : batch_seg = None
     else : batch_seg = np.stack(seg_list, axis=0)
+    if len(weight_list) == 0 : batch_weight = None
+    else : batch_weight = np.concatenate(weight_list)
     # Combine batch_img and batch_seg into a tuple
-    batch = (batch_img, batch_seg)
+    if batch_weight is None : batch = (batch_img, batch_seg)
+    else : batch = (batch_img, batch_seg, batch_weight)
     # Return finished batch
     return batch
 

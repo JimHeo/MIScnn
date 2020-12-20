@@ -170,6 +170,47 @@ class PreprocessorTEST(unittest.TestCase):
         pp.run_subfunctions(sample_list[8:10], training=False)
         pp.run(sample_list[8:10], training=False, validation=False)
 
+    # Simple Prepreossor run
+    def test_PREPROCESSOR_BASE_classweights(self):
+        class SegFix():
+            def __init__(self):
+                pass
+            def preprocessing(self, sample, training=True):
+                if training : sample.seg_data = np.squeeze(sample.seg_data, axis=0)
+            def postprocessing(self, prediction):
+                return prediction
+
+        dataset2D = dict()
+        for i in range(0, 100):
+            img = np.random.rand(16, 16) * 255
+            img = img.astype(int)
+            seg = np.array([np.random.rand(1) * 3]) - 1
+            seg = seg.astype(int)
+            dataset2D["TEST.sample_" + str(i)] = (img, seg)
+        io_interface2D = Dictionary_interface(dataset2D, classes=3,
+                                              three_dim=False)
+        tmp_dir2D = tempfile.TemporaryDirectory(prefix="tmp.miscnn.")
+        tmp_batches = os.path.join(tmp_dir2D.name, "batches")
+        data_io2D = Data_IO(io_interface2D, input_path="", output_path="",
+                            batch_path=tmp_batches, delete_batchDir=False)
+        sample_list = data_io2D.get_indiceslist()
+        pp = Preprocessor(data_io2D, data_aug=None, batch_size=32,
+                          subfunctions=[SegFix()], analysis="fullimage")
+        pp.class_weights = {0: 13.3,
+                            1: 2,
+                            2: 1}
+        batches = pp.run(sample_list[0:100], training=True, validation=False)
+        for i, batch in enumerate(batches):
+            if i != len(batches)-1:
+                self.assertTrue(np.array_equal(batch[0].shape, (32, 16, 16, 1)))
+                self.assertTrue(np.array_equal(batch[1].shape, (32, 1, 3)))
+                self.assertTrue(np.array_equal(batch[2].shape, (32,)))
+            else:
+                self.assertTrue(np.array_equal(batch[0].shape, (4, 16, 16, 1)))
+                self.assertTrue(np.array_equal(batch[1].shape, (4, 1, 3)))
+                self.assertTrue(np.array_equal(batch[2].shape, (4,)))
+        tmp_dir2D.cleanup()
+
     #-------------------------------------------------#
     #                  Postprocessing                 #
     #-------------------------------------------------#
