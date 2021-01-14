@@ -66,7 +66,7 @@ class DataGenerator(Keras_Sequence):
         # Return the batch containing only an image,
         # an image + a segmentation or an image + segmentation + weights
         if self.training:
-            if self.preprocessor.class_weights is not None:
+            if self.preprocessor.sample_weights is not None:
                 return batch[0], batch[1], batch[2]
             else : return batch[0], batch[1]
         else:

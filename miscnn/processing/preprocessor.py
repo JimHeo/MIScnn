@@ -113,7 +113,7 @@ class Preprocessor:
     cache = dict()                          # Cache additional information and data for patch assembling after patchwise prediction
     thread_lock = threading.Lock()          # Create a threading lock for multiprocessing
     mp_threads = 5                          # Number of threads used to prepare subfunctions if use_multiprocessing is set to True
-    class_weights = None                    # Dictionary of class weights (key: argmax position, value: float)
+    sample_weights = None                   # Dictionary of class weights (key: argmax position, value: float)
 
     #---------------------------------------------#
     #               Prepare Batches               #
@@ -158,10 +158,10 @@ class Preprocessor:
                 ready_data = self.analysis_patchwise_grid(sample, training,
                                                           data_aug)
             # Add class weights as sample weights to data stack
-            if training and self.class_weights:
+            if training and self.sample_weights:
                 for i in range(0, len(ready_data)):
                     annotation = np.argmax(ready_data[i][1])
-                    weight = self.class_weights[annotation]
+                    weight = self.sample_weights[annotation]
                     ready_data[i] = ready_data[i] + ([weight], )
             # Identify if current index is the last one
             if index == indices_list[-1]: last_index = True

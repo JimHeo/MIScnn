@@ -196,7 +196,7 @@ class PreprocessorTEST(unittest.TestCase):
         sample_list = data_io2D.get_indiceslist()
         pp = Preprocessor(data_io2D, data_aug=None, batch_size=32,
                           subfunctions=[SegFix()], analysis="fullimage")
-        pp.class_weights = {0: 13.3,
+        pp.sample_weights = {0: 13.3,
                             1: 2,
                             2: 1}
         batches = pp.run(sample_list[0:100], training=True, validation=False)
