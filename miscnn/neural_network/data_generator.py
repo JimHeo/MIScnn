@@ -63,9 +63,12 @@ class DataGenerator(Keras_Sequence):
         # Load a batch by generating it or by loading an already prepared
         if self.preprocessor.prepare_batches : batch = self.load_batch(idx)
         else : batch = self.generate_batch(idx)
-        # Return the batch containing only an image or an image and segmentation
+        # Return the batch containing only an image,
+        # an image + a segmentation or an image + segmentation + weights
         if self.training:
-            return batch[0], batch[1]
+            if self.preprocessor.class_weights is not None:
+                return batch[0], batch[1], batch[2]
+            else : return batch[0], batch[1]
         else:
             return batch[0]
 
